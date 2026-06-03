@@ -131,6 +131,16 @@ recursos sin hacer trabajo útil.
 - Protege **solo** las **regiones críticas estrictamente necesarias** (evita bloqueos amplios).
 - Justifica en **`el reporte de laboratorio`** cada cambio: cuál era el riesgo y cómo lo resuelves.
 
+### Respuesta
+
+Se corrigieron los siguientes problemas:
+
+- **`Snake.body`**: Se sincronizaron los métodos `advance()`, `snapshot()`, `head()`, `turn()` y `direction()` para evitar que el hilo de la serpiente y el hilo de Swing accedan al cuerpo al mismo tiempo. Se eliminó `volatile` de `direction` ya que la sincronización lo hace innecesario.
+
+- **`SnakeApp.snakes`**: Se cambió de `ArrayList` a `CopyOnWriteArrayList` para que Swing pueda iterar la lista sin riesgo de `ConcurrentModificationException`.
+
+- **`Board.step()`**: Se separó `snake.advance()` fuera del bloque `synchronized` del Board para evitar un posible deadlock, ya que `step()` tenía el lock de `Board` y llamaba a `advance()` que toma el lock de `Snake`.
+
 ### 3) Control de ejecución seguro (UI)
 
 - Implementa la **UI** con **Iniciar / Pausar / Reanudar** (ya existe el botón _Action_ y el reloj `GameClock`).
