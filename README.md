@@ -86,6 +86,45 @@ Cada hilo revisa en cada iteración si debe pausarse. Si es así, se duerme con 
   - **Colecciones** o estructuras **no seguras** en contexto concurrente.
   - Ocurrencias de **espera activa** (busy-wait) o de sincronización innecesaria.
 
+### Respuesta
+
+#### ¿Cómo usa hilos el código?
+Cada serpiente corre en su propio hilo creado con
+`Executors.newVirtualThreadPerTaskExecutor()`. Cada hilo ejecuta
+un `SnakeRunner` en loop continuo moviendo su serpiente de forma
+autónoma. hay un hilo del `GameClock` que dispara el
+repintado cada 60ms y el hilo de Swing que dibuja.
+Con n serpientes hay n+2 hilos corriendo al mismo tiempo
+sobre los mismos objetos compartidos.
+
+#### Condiciones de carrera encontradas
+
+- **`Snake.body`**: Es un `ArrayDeque` que el hilo de la serpiente
+  modifica con `advance()` mientras Swing lo lee con `snapshot()`
+  para dibujarlo. Esto puede causar `ConcurrentModificationException`.
+
+- **`Snake.direction`**: Aunque es `volatile`, el método `turn()`
+  lee y escribe la dirección sin sincronización completa, pudiendo
+  causar lecturas inconsistentes.
+
+- **`SnakeApp.snakes`**: Es un `ArrayList` que se itera en
+  `paintComponent()` desde Swing mientras otros hilos la usan.
+  `ArrayList` no es thread-safe.
+
+#### Colecciones no seguras
+
+- `Snake.body` → `ArrayDeque` sin sincronización
+- `SnakeApp.snakes` → `ArrayList` sin sincronización
+- `Board.randomEmpty()` → accede a `mice`, `obstacles`, `turbo`
+  y `teleports` sin estar sincronizado
+
+#### Espera activa / sincronización innecesaria
+
+No hay busy-wait explícito, pero el `GameClock` sigue disparando
+ticks cuando el juego está pausado y solo los ignora con un `if`.
+Esto es sincronización innecesaria — el scheduler sigue consumiendo
+recursos sin hacer trabajo útil.
+
 ### 2) Correcciones mínimas y regiones críticas
 
 - **Elimina** esperas activas reemplazándolas por **señales** / **estados** o mecanismos de la librería de concurrencia.
