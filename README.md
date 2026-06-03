@@ -66,6 +66,14 @@ co.eci.snake
 
 > Objetivo didáctico: practicar suspensión/continuación **sin** espera activa y consolidar el modelo de monitores en Java.
 
+### Respuesta
+
+**Repositorio:** https://github.com/carljob/Lab01_PrimeFinder-CU
+
+Se modificó el PrimeFinder para que cada 5 segundos pause todos los hilos, muestre cuántos primos lleva encontrados y espere ENTER para continuar.
+
+Cada hilo revisa en cada iteración si debe pausarse. Si es así, se duerme con `wait()` sin consumir CPU. Cuando el usuario presiona ENTER, el Control despierta a todos con `notifyAll()`. Se usa `while` en lugar de `if` para evitar que un hilo se quede dormido para siempre si la señal llega en mal momento.
+
 ---
 
 ## Parte II — SnakeRace concurrente (núcleo del laboratorio)
