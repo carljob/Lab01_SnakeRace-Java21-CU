@@ -45,13 +45,12 @@ public final class SnakeApp extends JFrame {
     pack();
     setLocationRelativeTo(null);
 
-    this.clock = new GameClock(60, () -> SwingUtilities.invokeLater(gamePanel::repaint));
-
     board.setSnakes(snakes);
 
+    this.clock = new GameClock(60, () -> SwingUtilities.invokeLater(gamePanel::repaint));
     var exec = Executors.newVirtualThreadPerTaskExecutor();
-    snakes.forEach(s -> exec.submit(new SnakeRunner(s, board)));
 
+    snakes.forEach(s -> exec.submit(new SnakeRunner(s, board, clock)));
     actionButton.addActionListener((ActionEvent e) -> togglePause());
 
     gamePanel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("SPACE"), "pause");
@@ -137,6 +136,7 @@ public final class SnakeApp extends JFrame {
     } else {
       clock.pause();
       actionButton.setText("Reanudar");
+      try { Thread.sleep(500); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
       mostrarEstadisticas();
     }
   }
@@ -260,7 +260,10 @@ public final class SnakeApp extends JFrame {
         var body = s.snapshot().toArray(new Position[0]);
         for (int i = 0; i < body.length; i++) {
           var p = body[i];
-          Color base = new Color(0, 160, 180);
+          Color base;
+          if (idx == 0) base = new Color(255, 140, 0);
+          else if (idx == 1) base = new Color(180, 0, 255);
+          else base = new Color(0, 160, 180);
           if (s == longestSnake) base = new Color(0, 200, 0);
           if (s == firstDeadSnake) base = new Color(200, 0, 0);
           int shade = Math.max(0, 40 - i * 4);

@@ -28,12 +28,31 @@ public final class GameClock implements AutoCloseable {
     }
   }
 
+  public void checkPause() {
+    synchronized (this) {
+      while (state.get() == GameState.PAUSED) {
+        try {
+          wait();
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+        }
+      }
+    }
+  }
+
   public boolean isPaused() {
     return state.get() == GameState.PAUSED;
   }
 
-  public void pause()  { state.set(GameState.PAUSED); }
-  public void resume() { state.set(GameState.RUNNING); }
+  public synchronized void pause() {
+    state.set(GameState.PAUSED);
+  }
+
+  public synchronized void resume() {
+    state.set(GameState.RUNNING);
+    notifyAll();
+  }
+
   public void stop()   { state.set(GameState.STOPPED); }
   @Override public void close() { scheduler.shutdownNow(); }
 }
