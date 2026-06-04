@@ -5,10 +5,12 @@ import java.util.Deque;
 
 public final class Snake {
   private final Deque<Position> body = new ArrayDeque<>();
-  private volatile Direction direction;
+  private  Direction direction;
   private int maxLength = 5;
   private boolean alive = true;
   private long deathTime = Long.MAX_VALUE;
+  private int maxSegmentsReached = 5;
+
 
   private Snake(Position start, Direction dir) {
     body.addFirst(start);
@@ -43,7 +45,10 @@ public final class Snake {
 
   public synchronized void advance(Position newHead, boolean grow) {
     body.addFirst(newHead);
-    if (grow) maxLength++;
+    if (grow) {
+      maxLength++;
+      maxSegmentsReached = Math.max(maxSegmentsReached, maxLength);
+    }
     while (body.size() > maxLength) body.removeLast();
   }
 
@@ -60,5 +65,9 @@ public final class Snake {
 
   public synchronized long getDeathTime() {
     return deathTime;
+  }
+
+  public synchronized int getMaxSegmentsReached() {
+    return maxSegmentsReached;
   }
 }

@@ -132,10 +132,13 @@ public final class SnakeApp extends JFrame {
   private void togglePause() {
     if (clock.isPaused()) {
       actionButton.setText("Pausar");
+      gamePanel.setPaused(false);
+      snakes.removeIf(s -> !s.isAlive());
       clock.resume();
     } else {
       clock.pause();
       actionButton.setText("Reanudar");
+      gamePanel.setPaused(true);
       try { Thread.sleep(500); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
       mostrarEstadisticas();
     }
@@ -144,7 +147,7 @@ public final class SnakeApp extends JFrame {
   private void mostrarEstadisticas() {
     Snake masLarga = snakes.stream()
             .filter(Snake::isAlive)
-            .max(java.util.Comparator.comparingInt(s -> s.snapshot().size()))
+            .max(java.util.Comparator.comparingInt(Snake::getMaxSegmentsReached))
             .orElse(null);
 
     Snake peorSerpiente = snakes.stream()
@@ -156,7 +159,7 @@ public final class SnakeApp extends JFrame {
     if (masLarga != null) {
       msg.append("Serpiente más larga: #")
               .append(snakes.indexOf(masLarga))
-              .append(" (").append(masLarga.snapshot().size()).append(" segmentos)\n");
+              .append(" (").append(masLarga.getMaxSegmentsReached()).append(" segmentos)\n");
     } else {
       msg.append("No hay serpientes vivas\n");
     }
@@ -181,6 +184,8 @@ public final class SnakeApp extends JFrame {
     private final int cell = 20;
     private Snake longestSnake = null;
     private Snake firstDeadSnake = null;
+    private boolean paused = false;
+
 
     @FunctionalInterface
     public interface Supplier {
@@ -199,8 +204,13 @@ public final class SnakeApp extends JFrame {
       this.firstDeadSnake = firstDead;
     }
 
+    public void setPaused(boolean paused) {
+      this.paused = paused;
+    }
+
     @Override
     protected void paintComponent(Graphics g) {
+
       super.paintComponent(g);
       var g2 = (Graphics2D) g.create();
       g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -257,6 +267,15 @@ public final class SnakeApp extends JFrame {
       var snakes = snakesSupplier.get();
       int idx = 0;
       for (Snake s : snakes) {
+        if (!s.isAlive() && s != firstDeadSnake) {
+          var body = s.snapshot().toArray(new Position[0]);
+          for (Position p : body) {
+            g2.setColor(new Color(150, 150, 150)); // siempre gris mientras muerta
+            g2.fillRect(p.x() * cell + 2, p.y() * cell + 2, cell - 4, cell - 4);
+          }
+          idx++;
+          continue;
+        }
         var body = s.snapshot().toArray(new Position[0]);
         for (int i = 0; i < body.length; i++) {
           var p = body[i];

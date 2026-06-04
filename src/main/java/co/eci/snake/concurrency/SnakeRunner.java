@@ -24,7 +24,7 @@ public final class SnakeRunner implements Runnable {
   @Override
   public void run() {
     try {
-      while (!Thread.currentThread().isInterrupted()) {
+      while (!Thread.currentThread().isInterrupted() && snake.isAlive()) {
         clock.checkPause();
         maybeTurn();
         var res = board.step(snake);
