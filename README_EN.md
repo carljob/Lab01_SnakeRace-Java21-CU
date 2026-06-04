@@ -1,5 +1,3 @@
----
-
 # Lab Report (English Version)
 
 ## Part I — PrimeFinder
