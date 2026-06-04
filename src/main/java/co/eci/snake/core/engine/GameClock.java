@@ -28,6 +28,10 @@ public final class GameClock implements AutoCloseable {
     }
   }
 
+  public boolean isPaused() {
+    return state.get() == GameState.PAUSED;
+  }
+
   public void pause()  { state.set(GameState.PAUSED); }
   public void resume() { state.set(GameState.RUNNING); }
   public void stop()   { state.set(GameState.STOPPED); }

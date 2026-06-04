@@ -7,6 +7,8 @@ public final class Snake {
   private final Deque<Position> body = new ArrayDeque<>();
   private volatile Direction direction;
   private int maxLength = 5;
+  private boolean alive = true;
+  private long deathTime = Long.MAX_VALUE;
 
   private Snake(Position start, Direction dir) {
     body.addFirst(start);
@@ -43,5 +45,20 @@ public final class Snake {
     body.addFirst(newHead);
     if (grow) maxLength++;
     while (body.size() > maxLength) body.removeLast();
+  }
+
+  public synchronized boolean isAlive() {
+    return alive;
+  }
+
+  public synchronized void die() {
+    if (alive) {
+      alive = false;
+      deathTime = System.currentTimeMillis();
+    }
+  }
+
+  public synchronized long getDeathTime() {
+    return deathTime;
   }
 }

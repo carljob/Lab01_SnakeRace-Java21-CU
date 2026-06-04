@@ -15,6 +15,7 @@ public final class Board {
   private final Set<Position> obstacles = new HashSet<>();
   private final Set<Position> turbo = new HashSet<>();
   private final Map<Position, Position> teleports = new HashMap<>();
+  private java.util.List<Snake> snakes = new java.util.ArrayList<>();
 
   public enum MoveResult { MOVED, ATE_MOUSE, HIT_OBSTACLE, ATE_TURBO, TELEPORTED }
 
@@ -49,6 +50,15 @@ public final class Board {
       next = new Position(head.x() + dir.dx, head.y() + dir.dy).wrap(width, height);
 
       if (obstacles.contains(next)) return MoveResult.HIT_OBSTACLE;
+
+      for (Snake other : snakes) {
+        if (other == snake) continue;
+        if (!other.isAlive()) continue;
+        if (other.snapshot().contains(next)) {
+          snake.die();
+          return MoveResult.HIT_OBSTACLE;
+        }
+      }
 
       boolean teleported = false;
       if (teleports.containsKey(next)) {
@@ -94,5 +104,8 @@ public final class Board {
       if (guard > width*height*2) break;
     } while (mice.contains(p) || obstacles.contains(p) || turbo.contains(p) || teleports.containsKey(p));
     return p;
+  }
+  public void setSnakes(java.util.List<Snake> snakes) {
+    this.snakes = snakes;
   }
 }

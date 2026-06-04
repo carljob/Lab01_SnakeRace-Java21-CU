@@ -47,6 +47,8 @@ public final class SnakeApp extends JFrame {
 
     this.clock = new GameClock(60, () -> SwingUtilities.invokeLater(gamePanel::repaint));
 
+    board.setSnakes(snakes);
+
     var exec = Executors.newVirtualThreadPerTaskExecutor();
     snakes.forEach(s -> exec.submit(new SnakeRunner(s, board)));
 
@@ -129,19 +131,56 @@ public final class SnakeApp extends JFrame {
   }
 
   private void togglePause() {
-    if ("Action".equals(actionButton.getText())) {
-      actionButton.setText("Resume");
-      clock.pause();
-    } else {
-      actionButton.setText("Action");
+    if (clock.isPaused()) {
+      actionButton.setText("Pausar");
       clock.resume();
+    } else {
+      clock.pause();
+      actionButton.setText("Reanudar");
+      mostrarEstadisticas();
     }
+  }
+
+  private void mostrarEstadisticas() {
+    Snake masLarga = snakes.stream()
+            .filter(Snake::isAlive)
+            .max(java.util.Comparator.comparingInt(s -> s.snapshot().size()))
+            .orElse(null);
+
+    Snake peorSerpiente = snakes.stream()
+            .filter(s -> !s.isAlive())
+            .min(java.util.Comparator.comparingLong(Snake::getDeathTime))
+            .orElse(null);
+
+    StringBuilder msg = new StringBuilder("=== JUEGO PAUSADO ===\n");
+    if (masLarga != null) {
+      msg.append("Serpiente más larga: #")
+              .append(snakes.indexOf(masLarga))
+              .append(" (").append(masLarga.snapshot().size()).append(" segmentos)\n");
+    } else {
+      msg.append("No hay serpientes vivas\n");
+    }
+    if (peorSerpiente != null) {
+      msg.append("Primera en morir: #")
+              .append(snakes.indexOf(peorSerpiente));
+    } else {
+      msg.append("Ninguna serpiente ha muerto aún");
+    }
+
+    gamePanel.updateStats(masLarga, peorSerpiente);
+    gamePanel.repaint();
+
+    JOptionPane.showMessageDialog(this, msg.toString());
+    gamePanel.updateStats(null, null);
+
   }
 
   public static final class GamePanel extends JPanel {
     private final Board board;
     private final Supplier snakesSupplier;
     private final int cell = 20;
+    private Snake longestSnake = null;
+    private Snake firstDeadSnake = null;
 
     @FunctionalInterface
     public interface Supplier {
@@ -153,6 +192,11 @@ public final class SnakeApp extends JFrame {
       this.snakesSupplier = snakesSupplier;
       setPreferredSize(new Dimension(board.width() * cell + 1, board.height() * cell + 40));
       setBackground(Color.WHITE);
+    }
+
+    public void updateStats(Snake longest, Snake firstDead) {
+      this.longestSnake = longest;
+      this.firstDeadSnake = firstDead;
     }
 
     @Override
@@ -216,7 +260,9 @@ public final class SnakeApp extends JFrame {
         var body = s.snapshot().toArray(new Position[0]);
         for (int i = 0; i < body.length; i++) {
           var p = body[i];
-          Color base = (idx == 0) ? new Color(0, 170, 0) : new Color(0, 160, 180);
+          Color base = new Color(0, 160, 180);
+          if (s == longestSnake) base = new Color(0, 200, 0);
+          if (s == firstDeadSnake) base = new Color(200, 0, 0);
           int shade = Math.max(0, 40 - i * 4);
           g2.setColor(new Color(
               Math.min(255, base.getRed() + shade),
