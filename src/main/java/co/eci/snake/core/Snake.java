@@ -1,3 +1,9 @@
+/**
+ * Represents a snake in the game. All methods are synchronized to prevent
+ * race conditions between the SnakeRunner thread (which modifies the body)
+ * and the Swing thread (which reads it for rendering).
+ */
+
 package co.eci.snake.core;
 
 import java.util.ArrayDeque;

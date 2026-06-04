@@ -28,6 +28,11 @@ public final class GameClock implements AutoCloseable {
     }
   }
 
+  /**
+   * Suspends the calling thread while the game is paused.
+   * Uses wait/notifyAll to avoid busy-waiting.
+   */
+
   public void checkPause() {
     synchronized (this) {
       while (state.get() == GameState.PAUSED) {

@@ -141,6 +141,10 @@ Se corrigieron los siguientes problemas:
 
 - **`Board.step()`**: Se separó `snake.advance()` fuera del bloque `synchronized` del Board para evitar un posible deadlock, ya que `step()` tenía el lock de `Board` y llamaba a `advance()` que toma el lock de `Snake`.
 
+#### Esperas activas eliminadas
+
+El `GameClock` original seguía disparando ticks aunque el juego estuviera pausado, ignorándolos con un `if` — sincronización innecesaria. Se reemplazó por `checkPause()` que usa `wait/notifyAll` sobre el monitor del `GameClock`. Los hilos `SnakeRunner` llaman `checkPause()` en cada iteración y se duermen sin consumir CPU hasta que se reanude el juego.
+
 ### 3) Control de ejecución seguro (UI)
 
 - Implementa la **UI** con **Iniciar / Pausar / Reanudar** (ya existe el botón _Action_ y el reloj `GameClock`).

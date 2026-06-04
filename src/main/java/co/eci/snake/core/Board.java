@@ -1,3 +1,4 @@
+
 package co.eci.snake.core;
 
 import java.util.HashMap;
@@ -36,6 +37,12 @@ public final class Board {
   public synchronized Set<Position> obstacles() { return new HashSet<>(obstacles); }
   public synchronized Set<Position> turbo() { return new HashSet<>(turbo); }
   public synchronized Map<Position, Position> teleports() { return new HashMap<>(teleports); }
+
+  /**
+   * Moves the snake one step. The synchronized block protects the board's
+   * collections. snake.advance() is called outside the block to avoid deadlock
+   * between Board's lock and Snake's lock.
+   */
 
   public MoveResult step(Snake snake) {
     Objects.requireNonNull(snake, "snake");
