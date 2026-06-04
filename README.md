@@ -149,6 +149,18 @@ Se corrigieron los siguientes problemas:
   - La **peor serpiente** (la que **primero murió**).
 - Considera que la suspensión **no es instantánea**; coordina para que el estado mostrado no quede “a medias”.
 
+### Respuesta
+
+Se implementó el control de ejecución con los siguientes cambios:
+
+- El botón cambia entre **Pausar** y **Reanudar** correctamente.
+- Al pausar, los `SnakeRunner` se detienen usando `checkPause()` en `GameClock` con `wait/notifyAll`, garantizando que el estado mostrado sea consistente.
+- Se agregó un delay de 500ms antes de calcular las estadísticas para asegurar que todos los hilos estén detenidos.
+- Al pausar se muestra la **serpiente más larga** (verde) y la **primera en morir** (roja).
+- Las serpientes muertas se muestran en **gris** al pausar y desaparecen al reanudar.
+- Al reanudar, las serpientes muertas se eliminan de la lista y solo continúan las vivas.
+
+
 ### 4) Robustez bajo carga
 
 - Ejecuta con **N alto** (`-Dsnakes=20` o más) y/o aumenta la velocidad.
