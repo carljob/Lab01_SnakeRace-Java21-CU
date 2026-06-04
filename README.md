@@ -167,6 +167,10 @@ Se implementó el control de ejecución con los siguientes cambios:
 - El juego **no debe romperse**: sin `ConcurrentModificationException`, sin lecturas inconsistentes, sin _deadlocks_.
 - Si habilitas **teleports** y **turbo**, verifica que las reglas no introduzcan carreras.
 
+### Respuesta
+
+Se ejecutó el juego con `-Dsnakes=20` y mayor velocidad sin obtener errores. No se presentaron `ConcurrentModificationException`, lecturas inconsistentes ni deadlocks. Las correcciones de sincronización implementadas en los puntos anteriores garantizan la robustez bajo carga alta.
+
 > Entregables detallados más abajo.
 
 ---
